@@ -1,5 +1,5 @@
 {
-	"name": "Pipeline 1",
+	"name": "create vieux",
 	"properties": {
 		"activities": [
 			{
@@ -24,6 +24,7 @@
 					],
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
 						"enablePartitionDiscovery": false
 					},
 					"formatSettings": {
@@ -64,8 +65,12 @@
 							"typeProperties": {
 								"storedProcedureName": "[dbo].[CreatesQLServerlessView_gold]",
 								"storedProcedureParameters": {
-									"undefined": {
-										"value": ""
+									"ViewName": {
+										"value": {
+											"value": "@item().name",
+											"type": "Expression"
+										},
+										"type": "String"
 									}
 								}
 							},
