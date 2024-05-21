@@ -27,7 +27,7 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('workspaceName'), '/Pipeline 1')]",
+			"name": "[concat(parameters('workspaceName'), '/create vieux')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -96,8 +96,12 @@
 									"typeProperties": {
 										"storedProcedureName": "[dbo].[CreatesQLServerlessView_gold]",
 										"storedProcedureParameters": {
-											"undefined": {
-												"value": ""
+											"ViewName": {
+												"value": {
+													"value": "@item().name",
+													"type": "Expression"
+												},
+												"type": "String"
 											}
 										}
 									},
@@ -235,7 +239,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/SQLQuery1')]",
+			"name": "[concat(parameters('workspaceName'), '/CreateVieuxSynaps')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
