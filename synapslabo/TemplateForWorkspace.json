@@ -27,6 +27,123 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('workspaceName'), '/Pipeline 1')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Tables names",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "goldtables",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "BinaryReadSettings"
+							}
+						}
+					},
+					{
+						"name": "ForEach table name",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Tables names",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get Tables names').output.childItems",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Stored procedure1",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[dbo].[CreatesQLServerlessView_gold]",
+										"storedProcedureParameters": {
+											"undefined": {
+												"value": ""
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "ServelessSQLDB",
+										"type": "LinkedServiceReference"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/goldtables')]",
+				"[concat(variables('workspaceId'), '/linkedServices/ServelessSQLDB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/goldtables')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapslabo-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "SalesLT",
+						"fileSystem": "gold"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapslabo-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/ServelessSQLDB')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -114,6 +231,58 @@
 			"properties": {
 				"type": "ManagedIdentity",
 				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQLQuery1')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "USE GOLD_DB;\nGO\n\nCREATE OR ALTER PROCEDURE CreatesQLServerlessView_gold (\n    @ViewName NVARCHAR(100),\n    @DataLakeUrl NVARCHAR(MAX) = N'https://datalakelabo4.dfs.core.windows.net/gold/SalesLT/'\n)\nWITH EXECUTE AS CALLER\nAS\nBEGIN\n    DECLARE @statement NVARCHAR(MAX);\n    SET @statement = N'CREATE OR ALTER VIEW ' + @ViewName + N' AS\n                       SELECT * FROM OPENROWSET (BULK @DataLakeUrl + @ViewName + N'''', FORMAT = ''DELTA'') as [result]';\n\n    EXEC sp_executesql @statement;\nEND;\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "GOLD_DB",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/CreateVieuxSynaps')]",
+			"type": "Microsoft.Synapse/workspaces/sparkConfigurations",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"configs": {
+					"USE": "gold_db;",
+					"CREATE": "OR ALTER PROCEDURE CreatesQLServerlessView_gold (",
+					"@ViewName": "@ViewName NVARCHAR(100),",
+					"@DataLakeUrl": "@DataLakeUrl NVARCHAR(MAX) = N'https://datalakelabo4.dfs.core.windows.net/gold/SalesLT/'",
+					"WITH": "EXECUTE AS CALLER",
+					"DECLARE": "DECLARE @statement NVARCHAR(MAX);",
+					"SET": "SET @statement = N'CREATE OR ALTER VIEW ' + @ViewName + N' AS",
+					"SELECT": "SELECT * FROM OPENROWSET (BULK @DataLakeUrl + @ViewName + N'''', FORMAT = ''DELTA'') as [result]';",
+					"EXEC": "EXEC sp_executesql @statement;"
+				},
+				"created": "2024-05-21T22:00:04.4310000+02:00",
+				"createdBy": "sirinebeloucif6@gmail.com",
+				"configMergeRule": {
+					"artifact.currentOperation.USE": "replace",
+					"artifact.currentOperation.CREATE": "replace",
+					"artifact.currentOperation.@ViewName": "replace",
+					"artifact.currentOperation.@DataLakeUrl": "replace",
+					"artifact.currentOperation.WITH": "replace",
+					"artifact.currentOperation.DECLARE": "replace",
+					"artifact.currentOperation.SET": "replace",
+					"artifact.currentOperation.SELECT": "replace",
+					"artifact.currentOperation.EXEC": "replace"
+				}
 			},
 			"dependsOn": []
 		}
