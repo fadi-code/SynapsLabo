@@ -2,7 +2,7 @@
 	"name": "CreateVieuxSynaps",
 	"properties": {
 		"content": {
-			"query": "USE GOLD_DB;\nGO\n\nCREATE OR ALTER PROCEDURE CreatesQLServerlessView_gold (\n    @ViewName NVARCHAR(100),\n    @DataLakeUrl NVARCHAR(MAX) = N'https://datalakelabo4.dfs.core.windows.net/gold/SalesLT/'\n)\nWITH EXECUTE AS CALLER\nAS\nBEGIN\n    DECLARE @statement NVARCHAR(MAX);\n    SET @statement = N'CREATE OR ALTER VIEW ' + @ViewName + N' AS\n                       SELECT * FROM OPENROWSET (BULK @DataLakeUrl + @ViewName + N'''', FORMAT = ''DELTA'') as [result]';\n\n    EXEC sp_executesql @statement;\nEND;\nGO",
+			"query": "USE GOLD_DB;\nGO\n\nCREATE OR ALTER PROCEDURE CreatesQLServerlessView_gold (\n    @ViewName NVARCHAR(100),\n    @DataLakeUrl NVARCHAR(MAX) = 'https://datalakelabo4.dfs.core.windows.net/gold/SalesLT/'\n)\nWITH EXECUTE AS CALLER\nAS\nBEGIN\n    DECLARE @statement NVARCHAR(MAX);\n    SET @statement = N'CREATE OR ALTER VIEW ' + @ViewName + N' AS\n                       SELECT * FROM OPENROWSET (BULK @DataLakeUrl + @ViewName + N'''', FORMAT = ''DELTA'') as [result]';\n\n    EXEC sp_executesql @statement;\nEND;\nGO",
 			"metadata": {
 				"language": "sql"
 			},
