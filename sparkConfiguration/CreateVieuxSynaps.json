@@ -1,0 +1,29 @@
+{
+	"name": "CreateVieuxSynaps",
+	"properties": {
+		"configs": {
+			"USE": "gold_db;",
+			"CREATE": "OR ALTER PROCEDURE CreatesQLServerlessView_gold (",
+			"@ViewName": "@ViewName NVARCHAR(100),",
+			"@DataLakeUrl": "@DataLakeUrl NVARCHAR(MAX) = N'https://datalakelabo4.dfs.core.windows.net/gold/SalesLT/'",
+			"WITH": "EXECUTE AS CALLER",
+			"DECLARE": "DECLARE @statement NVARCHAR(MAX);",
+			"SET": "SET @statement = N'CREATE OR ALTER VIEW ' + @ViewName + N' AS",
+			"SELECT": "SELECT * FROM OPENROWSET (BULK @DataLakeUrl + @ViewName + N'''', FORMAT = ''DELTA'') as [result]';",
+			"EXEC": "EXEC sp_executesql @statement;"
+		},
+		"created": "2024-05-21T22:00:04.4310000+02:00",
+		"createdBy": "sirinebeloucif6@gmail.com",
+		"configMergeRule": {
+			"artifact.currentOperation.USE": "replace",
+			"artifact.currentOperation.CREATE": "replace",
+			"artifact.currentOperation.@ViewName": "replace",
+			"artifact.currentOperation.@DataLakeUrl": "replace",
+			"artifact.currentOperation.WITH": "replace",
+			"artifact.currentOperation.DECLARE": "replace",
+			"artifact.currentOperation.SET": "replace",
+			"artifact.currentOperation.SELECT": "replace",
+			"artifact.currentOperation.EXEC": "replace"
+		}
+	}
+}
